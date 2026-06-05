@@ -41,11 +41,11 @@ app.use(session({
 
 // Root static files
 
-app.use(express.static(path.join(__dirname, "../frontend")));
+app.use(express.static(path.join(__dirname, "../Frontend")));
 
 // Gaurav Admin static files
 app.use('/gaurav', express.static(
-    path.join(__dirname, '../frontend/gaurav')
+    path.join(__dirname, '../Frontend/gaurav')
 ));
 
 // Uploads static files
@@ -63,7 +63,7 @@ app.use('/public', express.static(
 // ============================================================
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/index.html"));
+    res.sendFile(path.join(__dirname, "../Frontend/index.html"));
 });
 
 // ============================================================
@@ -866,7 +866,7 @@ app.get('/gaurav', (req, res) => {
     res.sendFile(
         path.join(
             __dirname,
-            '../frontend/gaurav/login.html'
+            '../Frontend/gaurav/login.html'
         )
     );
 
@@ -887,7 +887,7 @@ app.get('/gaurav/dashboard', (req, res) => {
     res.sendFile(
         path.join(
             __dirname,
-            '../frontend/gaurav/dashboard.html'
+            '../Frontend/gaurav/dashboard.html'
         )
     );
 
