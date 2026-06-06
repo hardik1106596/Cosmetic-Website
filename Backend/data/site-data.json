@@ -456,12 +456,22 @@
       },
       {
         "id": "sk-17",
-        "name": "Sunscreen",
-        "slug": "sunscreen",
-        "description": "Sunscreen is most of used",
-        "image": "uploads/image-1779439437910-931111363.jpeg",
-        "keyIngredients": [],
-        "keyBenefits": []
+        "name": "hardik",
+        "slug": "hardik",
+        "description": "fgkhguiojb",
+        "image": "uploads/image-1780679735334-769796143.png",
+        "keyIngredients": [
+          {
+            "title": "bhjojbj",
+            "description": "jhbhi"
+          }
+        ],
+        "keyBenefits": [
+          {
+            "title": "nbhi",
+            "description": "knbhu"
+          }
+        ]
       },
       {
         "id": "sk-18",
@@ -561,6 +571,53 @@
         "slug": "bv",
         "description": "ljb",
         "image": "uploads/image-1780680638361-385154188.jpg",
+        "keyIngredients": [],
+        "keyBenefits": []
+      },
+      {
+        "id": "sk-27",
+        "name": "hjbj",
+        "slug": "hjbj",
+        "description": "ojhhj",
+        "image": "uploads/image-1780753507441-633420623.png",
+        "keyIngredients": [
+          {
+            "title": "jj",
+            "description": ""
+          }
+        ],
+        "keyBenefits": [
+          {
+            "title": "ih",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "id": "sk-28",
+        "name": "kjnbj",
+        "slug": "kjnbj",
+        "description": "ojhbhji",
+        "image": "uploads/image-1780753786559-405556607.png",
+        "keyIngredients": [
+          {
+            "title": "pojbj",
+            "description": ""
+          }
+        ],
+        "keyBenefits": [
+          {
+            "title": "pjjk",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "id": "sk-29",
+        "name": "jbjo",
+        "slug": "jbjo",
+        "description": "okjnn",
+        "image": "uploads/image-1780753834697-106830581.png",
         "keyIngredients": [],
         "keyBenefits": []
       }

@@ -7,6 +7,7 @@ const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const pool = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -207,6 +208,39 @@ function writeSiteData(data) {
 
 }
 
+async function getAllProductsFromDB() {
+
+    const result = await pool.query(`
+        SELECT *
+        FROM products
+        ORDER BY id
+    `);
+
+    const grouped = {
+        skincare: [],
+        haircare: [],
+        personalcare: [],
+        bathsoap: [],
+        grooming: []
+    };
+
+    result.rows.forEach(row => {
+
+        grouped[row.category].push({
+            id: row.id,
+            name: row.name,
+            slug: row.slug,
+            description: row.description,
+            image: row.image,
+            keyIngredients: row.keyingredients || [],
+            keyBenefits: row.keybenefits || []
+        });
+
+    });
+
+    return grouped;
+}
+
 // ============================================================
 // SANITIZE ARRAY FIELD
 // ============================================================
@@ -393,21 +427,26 @@ app.post('/api/logout', (req, res) => {
 // GET FULL SITE DATA
 // ============================================================
 
-app.get('/api/site-data', (req, res) => {
+app.get('/api/site-data', async (req, res) => {
 
     try {
 
-        const data = readSiteData();
+        const products =
+            await getAllProductsFromDB();
+
+        const data = {
+            categories: [],
+            products
+        };
 
         res.json(data);
 
     } catch (err) {
 
+        console.error(err);
+
         res.status(500).json({
-
-            error:
-                'Failed to read site data.'
-
+            error: 'Database error'
         });
 
     }
@@ -418,56 +457,48 @@ app.get('/api/site-data', (req, res) => {
 // GET SINGLE PRODUCT
 // ============================================================
 
-app.get('/api/products/:category/:id', (req, res) => {
+app.get('/api/products/:category/:id', async (req, res) => {
 
     try {
 
-        const data = readSiteData();
+        const { category, id } = req.params;
 
-        const {
-            category,
-            id
-        } = req.params;
+        const result = await pool.query(
+            `
+            SELECT *
+            FROM products
+            WHERE category = $1
+            AND id = $2
+            `,
+            [category, id]
+        );
 
-        if (!data.products || !data.products[category]) {
+        if (result.rows.length === 0) {
 
             return res.status(404).json({
-
-                error:
-                    'Category not found.'
-
+                error: 'Product not found.'
             });
 
         }
 
-        const product = data.products[
-            category
-        ].find(item => item.id === id);
-
-        if (!product) {
-
-            return res.status(404).json({
-
-                error:
-                    'Product not found.'
-
-            });
-
-        }
+        const product = result.rows[0];
 
         res.json({
-            ...product,
-            keyIngredients: product.keyIngredients || [],
-            keyBenefits: product.keyBenefits || []
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            description: product.description,
+            image: product.image,
+            keyIngredients: product.keyingredients || [],
+            keyBenefits: product.keybenefits || []
         });
 
     } catch (err) {
 
+        console.error(err);
+
         res.status(500).json({
-
-            error:
-                'Failed to fetch product.'
-
+            error: 'Failed to fetch product.'
         });
 
     }
@@ -477,41 +508,48 @@ app.get('/api/products/:category/:id', (req, res) => {
 // ============================================================
 // SLUG PRODUCT API
 // ============================================================
+app.get('/api/products/slug/:slug', async (req, res) => {
 
-app.get('/api/products/slug/:slug', (req, res) => {
+    try {
 
-    const data = readSiteData();
+        const result = await pool.query(
+            `
+            SELECT *
+            FROM products
+            WHERE slug = $1
+            `,
+            [req.params.slug]
+        );
 
-    let found = null;
+        if (result.rows.length === 0) {
 
-    for (let category in data.products) {
+            return res.status(404).json({
+                error: 'Product not found'
+            });
 
-        found = data.products[category].find(p => {
+        }
 
-            const generatedSlug = String(p.name || '')
-                .toLowerCase()
-                .trim()
-                .replace(/&/g, 'and')
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-+|-+$/g, '');
+        const product = result.rows[0];
 
-            return generatedSlug === req.params.slug;
-
+        res.json({
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            description: product.description,
+            image: product.image,
+            keyIngredients: product.keyingredients || [],
+            keyBenefits: product.keybenefits || []
         });
 
-        if (found) break;
+    } catch (err) {
 
-    }
+        console.error(err);
 
-    if (!found) {
-
-        return res.status(404).json({
-            error: "Product not found"
+        res.status(500).json({
+            error: 'Database error'
         });
 
     }
-
-    res.json(found);
 
 });
 
@@ -522,69 +560,88 @@ app.get('/api/products/slug/:slug', (req, res) => {
 app.post(
     '/api/admin/products/:category',
     requireAuth,
-    (req, res) => {
+    async(req, res) => {
 
         try {
 
-            const data = readSiteData();
+    const category = req.params.category;
 
-            const { category } = req.params;
+    const {
+        name,
+        description,
+        image,
+        keyIngredients,
+        keyBenefits
+    } = req.body;
 
-            if (!req.body.name || !String(req.body.name).trim()) {
+    const result = await pool.query(
+        `
+        SELECT COUNT(*) as count
+        FROM products
+        WHERE category = $1
+        `,
+        [category]
+    );
 
-                return res.status(400).json({
-                    error: 'Product name is required.'
-                });
+    const id =
+        category.substring(0, 2) +
+        '-' +
+        (parseInt(result.rows[0].count) + 1);
 
-            }
+    const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-');
 
-            if (!data.products) {
-                data.products = {};
-            }
+    await pool.query(
+        `
+        INSERT INTO products
+        (
+            id,
+            category,
+            name,
+            slug,
+            description,
+            image,
+            keyingredients,
+            keybenefits
+        )
+        VALUES
+        ($1,$2,$3,$4,$5,$6,$7,$8)
+        `,
+        [
+            id,
+            category,
+            name,
+            slug,
+            description || '',
+            image || '',
+            JSON.stringify(keyIngredients || []),
+            JSON.stringify(keyBenefits || [])
+        ]
+    );
 
-            if (!data.products[category]) {
-                data.products[category] = [];
-            }
-
-            const newId =
-                category.substring(0, 2) +
-                '-' +
-                (data.products[category].length + 1);
-
-            const productBody = buildProductBody(req.body);
-
-            const newProduct = {
-                id: newId,
-                ...productBody
-            };
-
-            data.products[category].push(newProduct);
-
-            writeSiteData(data);
-
-            res.json({
-
-                success: true,
-
-                message:
-                    'Product added successfully!',
-
-                data: newProduct
-
-            });
-
-        } catch (err) {
-
-            console.error('Add product error:', err);
-
-            res.status(500).json({
-
-                error:
-                    'Failed to add product.'
-
-            });
-
+    res.json({
+        success: true,
+        data: {
+            id,
+            name,
+            slug,
+            description,
+            image,
+            keyIngredients,
+            keyBenefits
         }
+    });
+
+} catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+        success: false,
+        error: 'Failed to add product'
+    });
+}
 
     }
 );
@@ -596,17 +653,11 @@ app.post(
 app.put(
     '/api/admin/products/:category/:index',
     requireAuth,
-    (req, res) => {
+    async (req, res) => {
 
         try {
 
-            const data = readSiteData();
-
-            const {
-                category,
-                index
-            } = req.params;
-
+            const { category, index } = req.params;
             const idx = parseInt(index);
 
             if (isNaN(idx)) {
@@ -617,53 +668,75 @@ app.put(
 
             }
 
+            const result = await pool.query(
+                `
+                SELECT *
+                FROM products
+                WHERE category = $1
+                ORDER BY id
+                `,
+                [category]
+            );
+
             if (
-                data.products &&
-                data.products[category] &&
-                idx >= 0 &&
-                idx < data.products[category].length
+                idx < 0 ||
+                idx >= result.rows.length
             ) {
 
-                const existing = data.products[category][idx];
-
-                const productBody = buildProductBody(req.body);
-
-                data.products[category][idx] = {
-
-                    ...existing,
-                    ...productBody,
-                    id: existing.id
-
-                };
-
-                writeSiteData(data);
-
-                res.json({
-
-                    success: true,
-
-                    message:
-                        'Product updated successfully!',
-
-                    data:
-                        data.products[category][idx]
-
-                });
-
-            } else {
-
-                res.status(404).json({
-
-                    error:
-                        'Product not found.'
-
+                return res.status(404).json({
+                    error: 'Product not found.'
                 });
 
             }
 
+            const existing =
+                result.rows[idx];
+
+            const productBody =
+                buildProductBody(req.body);
+
+            await pool.query(
+                `
+                UPDATE products
+                SET
+                    name = $1,
+                    slug = $2,
+                    description = $3,
+                    image = $4,
+                    keyingredients = $5,
+                    keybenefits = $6
+                WHERE id = $7
+                `,
+                [
+                    productBody.name,
+                    productBody.slug,
+                    productBody.description,
+                    productBody.image,
+                    JSON.stringify(
+                        productBody.keyIngredients || []
+                    ),
+                    JSON.stringify(
+                        productBody.keyBenefits || []
+                    ),
+                    existing.id
+                ]
+            );
+
+            res.json({
+
+                success: true,
+
+                message:
+                    'Product updated successfully!'
+
+            });
+
         } catch (err) {
 
-            console.error('Update product error:', err);
+            console.error(
+                'Update product error:',
+                err
+            );
 
             res.status(500).json({
 
@@ -684,55 +757,43 @@ app.put(
 app.delete(
     '/api/admin/products/:category/:index',
     requireAuth,
-    (req, res) => {
+    async (req, res) => {
 
         try {
 
-            const data = readSiteData();
-
-            const {
-                category,
-                index
-            } = req.params;
+            const { category, index } = req.params;
 
             const idx = parseInt(index);
 
-            if (
-                !data.products ||
-                !data.products[category]
-            ) {
-
-                return res.status(404).json({
-
-                    success: false,
-
-                    error: 'Category not found.'
-
-                });
-
-            }
+            const result = await pool.query(
+                `
+                SELECT *
+                FROM products
+                WHERE category = $1
+                ORDER BY id
+                `,
+                [category]
+            );
 
             if (
                 isNaN(idx) ||
                 idx < 0 ||
-                idx >= data.products[category].length
+                idx >= result.rows.length
             ) {
 
                 return res.status(404).json({
-
                     success: false,
-
                     error: 'Product not found.'
-
                 });
 
             }
 
             const product =
-                data.products[category][idx];
+                result.rows[idx];
+
+            // delete uploaded image if exists
 
             if (
-                product &&
                 product.image &&
                 product.image.startsWith('uploads/')
             ) {
@@ -748,11 +809,6 @@ app.delete(
 
                         fs.unlinkSync(imagePath);
 
-                        console.log(
-                            'Image deleted:',
-                            imagePath
-                        );
-
                     } catch (imgErr) {
 
                         console.error(
@@ -766,19 +822,20 @@ app.delete(
 
             }
 
-            const deletedProduct =
-                data.products[category].splice(idx, 1);
-
-            writeSiteData(data);
+            await pool.query(
+                `
+                DELETE FROM products
+                WHERE id = $1
+                `,
+                [product.id]
+            );
 
             res.json({
 
                 success: true,
 
                 message:
-                    'Product and image deleted successfully!',
-
-                data: deletedProduct[0]
+                    'Product deleted successfully!'
 
             });
 
