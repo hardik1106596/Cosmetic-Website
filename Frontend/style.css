@@ -44,6 +44,34 @@ img {
 }
 
 
+
+.certificate-buttons{
+    display:flex;
+    flex-direction:row;
+    gap:15px;
+    margin-top:20px;
+    align-items:center;
+}
+
+.certificate-btn{
+    display:inline-block;
+    width:auto;
+    background:#0d6efd;
+    color:white;
+    text-decoration:none;
+    padding:12px 25px;
+    border-radius:8px;
+    font-weight:600;
+    text-align:center;
+}
+
+.certificate-btn:hover{
+    background:#e5e5e5;
+}
+
+
+
+
 /* ============================================================
    2. Global / Utilities
    ============================================================ */
