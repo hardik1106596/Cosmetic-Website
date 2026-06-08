@@ -295,6 +295,20 @@ nav ul li a:hover {
     flex-direction: column;
 }
 
+
+.image-section{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.image-section img{
+    width:100%;
+    height:auto;
+    display:block;
+    border-radius:12px;
+}
+
 /* 🔥 hover par show */
 .dropdown:hover .submenu {
     opacity: 1;

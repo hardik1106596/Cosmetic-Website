@@ -74,11 +74,28 @@
     display: inline-block;
 }
 
-/* GRID */
-.vision-grid {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+
+
+.vision-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:40px;
+    align-items:center;
+}
+
+.vision-image{
+    width:950px;
+    max-width:1000px;
+    height:auto;
+    display:block;
+    margin:0 auto;
+    border-radius:20px;
+}
+
+.vision-grid img{
+    width:100%;
+    height:auto;
+    display:block;
 }
 
 /* CARD */
@@ -129,18 +146,8 @@
 }
 
 /* IMAGE */
-.vision-image {
-    width: 100%;
-    height: 460px;
-    overflow: hidden;
-}
 
-.vision-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
+
 
 /* =========================
    ABOUT STATS SECTION
