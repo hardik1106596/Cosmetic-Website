@@ -196,6 +196,41 @@ function sendWhatsApp() {
     document.getElementById("requirement").value = "";
 }
 
+
+
+
+function sendContactWhatsApp() {
+    let name = document.querySelector('input[name="name"]').value.trim();
+    let email = document.querySelector('input[name="email"]').value.trim();
+    let company = document.querySelector('input[name="company"]').value.trim();
+    let phone = document.querySelector('input[name="phone"]').value.trim();
+    let city = document.querySelector('input[name="city"]').value.trim();
+    let country = document.querySelector('input[name="country"]').value.trim();
+
+    if (!name || !email || !company) {
+        alert("Please fill all required fields");
+        return;
+    }
+
+    let message =
+        `Hello, I am interested in your services.\n\n` +
+        `Name: ${name}\n` +
+        `Email: ${email}\n` +
+        `Company: ${company}\n` +
+        `Phone: ${phone}\n` +
+        `City: ${city}\n` +
+        `Country: ${country}`;
+
+    let url =
+        "https://wa.me/919104525207?text=" +
+        encodeURIComponent(message);
+
+    window.open(url, "_blank");
+
+    document.getElementById("contactForm").reset();
+}
+
+
 /* click outside close */
 document.getElementById("quoteModal").addEventListener("click", function (e) {
     if (e.target === this) {
