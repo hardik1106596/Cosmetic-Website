@@ -1,6 +1,7 @@
 /* ============================================================
    BASILICA BIOTECH - COMPLETE EXPRESS BACKEND SERVER
    ============================================================ */
+require('dotenv').config();
 
 const express = require('express');
 const session = require('express-session');
@@ -8,9 +9,20 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const pool = require('./db');
+const nodemailer = require('nodemailer');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 // ============================================================
 // MIDDLEWARE
@@ -913,6 +925,103 @@ app.post(
 
     }
 );
+
+
+
+app.post('/api/subscribe', async (req, res) => {
+
+    try {
+
+        const { email } = req.body;
+
+        if (!email) {
+
+            return res.status(400).json({
+                success: false,
+                error: 'Email required'
+            });
+
+        }
+
+        await transporter.sendMail({
+
+            from: process.env.EMAIL_USER,
+
+            to: 'basilicabiotech@gmail.com',
+
+            subject: 'New Basilica Subscription',
+
+            text: `${email} subscribed to Basilica Biotech website`
+
+        });
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+
+app.post('/api/contact', async (req, res) => {
+
+    try {
+
+        const {
+            name,
+            email,
+            company,
+            phone,
+            city,
+            country
+        } = req.body;
+
+        await transporter.sendMail({
+
+            from: process.env.EMAIL_USER,
+
+            to: 'basilicabiotech@gmail.com',
+
+            subject: 'New Contact Form Submission',
+
+            html: `
+                <h2>New Contact Request</h2>
+
+                <p><b>Name:</b> ${name}</p>
+                <p><b>Email:</b> ${email}</p>
+                <p><b>Company:</b> ${company}</p>
+                <p><b>Phone:</b> ${phone}</p>
+                <p><b>City:</b> ${city}</p>
+                <p><b>Country:</b> ${country}</p>
+            `
+        });
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+
 
 // ============================================================
 // GAURAV ADMIN ROUTES

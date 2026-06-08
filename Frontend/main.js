@@ -247,6 +247,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentSlide = 0;
     const slides = document.querySelectorAll('.pl-image .slide');
 
+    if (!slides.length) return;
+
     function showSlide(index) {
         slides.forEach(slide => slide.classList.remove('active'));
         slides[index].classList.add('active');
@@ -262,13 +264,12 @@ document.addEventListener("DOMContentLoaded", function () {
         showSlide(currentSlide);
     }
 
-    // Auto slide
     setInterval(() => {
         currentSlide = (currentSlide + 1) % slides.length;
         showSlide(currentSlide);
     }, 3000);
-
 });
+
 
 /**
  * main.js — Janki Herbals · Core Values Section

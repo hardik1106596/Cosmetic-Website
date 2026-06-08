@@ -342,15 +342,24 @@
     </section>
 
     <section class="subscribe-wrapper">
-        <div class="subscribe-box">
-            <h2>Subscribe to us and get the latest updates</h2>
+    <div class="subscribe-box">
 
-            <div class="subscribe-form">
-                <input type="email" placeholder="e.g.contact@basilicabiotech.co">
-                <button>Submit</button>
-            </div>
+        <h2>Subscribe to us and get the latest updates</h2>
+
+        <div class="subscribe-form">
+            <input
+                type="email"
+                id="subscribeEmail"
+                placeholder="e.g.contact@basilicabiotech.co"
+            >
+
+            <button id="subscribeBtn">
+                Submit
+            </button>
         </div>
-    </section>
+
+    </div>
+</section>
 
     <!-- ============================================================
        FOOTER
@@ -444,6 +453,127 @@
 
     <!-- Main JavaScript -->
     <script src="main.js"></script>
+
+    <script>
+document.getElementById("contactForm").addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const formData = {
+        name: this.name.value,
+        email: this.email.value,
+        company: this.company.value,
+        phone: this.phone.value,
+        city: this.city.value,
+        country: this.country.value
+    };
+
+    try {
+
+        const res = await fetch("/api/contact", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+
+            alert("Thank you! We will contact you soon.");
+
+            this.reset();
+
+        } else {
+
+            alert("Failed to send");
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert("Server error");
+
+    }
+
+});
+</script>
+
+
+<script>
+
+document
+.getElementById('subscribeBtn')
+.addEventListener('click', async () => {
+
+    const email =
+        document
+        .getElementById('subscribeEmail')
+        .value
+        .trim();
+
+    if (!email) {
+
+        alert('Please enter an email');
+
+        return;
+    }
+
+    try {
+
+        const res = await fetch(
+            '/api/subscribe',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email
+                })
+            }
+        );
+
+        const data = await res.json();
+
+        if (data.success) {
+
+            alert(
+                'Thank you for subscribing!'
+            );
+
+            document
+            .getElementById('subscribeEmail')
+            .value = '';
+
+        } else {
+
+            alert(
+                'Subscription failed'
+            );
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert(
+            'Server error'
+        );
+
+    }
+
+});
+
+</script>
+
+
+
 </body>
 
 </html>
