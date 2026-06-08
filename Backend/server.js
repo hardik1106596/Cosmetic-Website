@@ -967,14 +967,14 @@ app.post('/api/subscribe', async (req, res) => {
         });
 
     } catch (err) {
+    console.error("MAIL ERROR:", err);
 
-        console.error(err);
-
-        res.status(500).json({
-            success: false
-        });
-
-    }
+    res.status(500).json({
+        success: false,
+        error: err.message,
+        stack: err.stack
+    });
+}
 
 });
 
