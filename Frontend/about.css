@@ -519,7 +519,8 @@
     background: #eef4fb;
     border-radius: 22px;
     padding: 50px 50px 50px 130px;
-    margin-left: 28%;
+    margin-left: 520px;
+    margin-right: 0px;
     position: absolute;
     overflow: hidden;
     min-height: 320px;
