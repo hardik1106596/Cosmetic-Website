@@ -28,19 +28,20 @@ body {
 
 .hero {
     width: 100%;
-    min-height: 770px;
-    background:url('./image/Private-Label.png');
-    background-size: cover;
-    background-position: center;
+    min-height: 590px;
+    background: url('./image/Private-Label (2).png');
+    background-size: contain;
+    background-position: center center;
     background-repeat: no-repeat;
     display: flex;
     align-items: center;
+    margin-top: 0px;
+    padding: 0 0px;
 }
-
-.hero-grid {
-    width: 100%;
-    max-width: 1440px;
-    margin: 0 auto;
+.hero-grid{
+    width:100%;
+    height:auto;
+    display:block;
 }
 
 /* Product box (placeholder) */

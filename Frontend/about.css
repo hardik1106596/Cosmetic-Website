@@ -55,7 +55,7 @@
    VISION MISSION SECTION
 ========================= */
 .vision-section {
-    max-width: 1100px;
+    max-width: 1500px;
     margin: auto;
     padding: 70px 0;
     background: #ffffff;
@@ -84,8 +84,8 @@
 }
 
 .vision-image{
-    width:950px;
-    max-width:1000px;
+    width:1100px;
+    max-width:2000px;
     height:auto;
     display:block;
     margin:0 auto;
