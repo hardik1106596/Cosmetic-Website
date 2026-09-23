@@ -594,18 +594,24 @@ app.post(
     } = req.body;
 
     const result = await pool.query(
-        `
-        SELECT COUNT(*) as count
-        FROM products
-        WHERE category = $1
-        `,
+    `
+        SELECT COALESCE(
+            MAX(
+                CAST(
+                    SPLIT_PART(id, '-', 2) AS INTEGER
+                )
+            ),
+            0
+            ) + 1 AS next_number
+            FROM products
+            WHERE category = $1
+            `,
         [category]
     );
 
-    const id =
-        category.substring(0, 2) +
-        '-' +
-        (parseInt(result.rows[0].count) + 1);
+    const nextNumber = result.rows[0].next_number;
+
+    const id =category.substring(0, 2) +'-' +nextNumber;
 
     const slug = name
         .toLowerCase()
